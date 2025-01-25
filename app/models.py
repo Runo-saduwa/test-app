@@ -1,24 +1,12 @@
 import uuid
 from sqlalchemy import (
-    Column, String, Text, ForeignKey, Boolean, Integer, DateTime, JSON, DECIMAL, Enum, Float, Index
+    Column, String, Text, ForeignKey, Boolean, Integer, DateTime, JSON, 
+    DECIMAL, Float, Index
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-import enum
 from datetime import datetime
 from app.database import Base
-
-class TestStatus(enum.Enum):
-    PENDING = "pending"
-    PASSED = "passed"
-    FAILED = "failed"
-
-class StepType(enum.Enum):
-    NAVIGATION = "navigation"
-    INPUT = "input"
-    CLICK = "click"
-    ASSERTION = "assertion"
-    CUSTOM = "custom"
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -188,7 +176,7 @@ class TestStep(Base):
     order = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    step_type = Column(Enum(StepType), nullable=False)
+    step_type = Column(String, nullable=False)  # 'navigation', 'input', 'click', 'assertion', 'custom'
     
     # Step-specific code and data
     automation_code = Column(Text, nullable=False)  # Only this step's code
@@ -209,7 +197,7 @@ class TestCaseRun(Base):
     __tablename__ = "test_case_runs"
     id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     test_case_id = Column(UUID(as_uuid=True), ForeignKey("test_cases.id"), nullable=False)
-    status = Column(Enum(TestStatus), nullable=False, default=TestStatus.PENDING)
+    status = Column(String, nullable=False, server_default='pending')  # 'pending', 'passed', 'failed'
     
     # Execution metrics
     start_time = Column(DateTime, nullable=False)
@@ -236,7 +224,7 @@ class TestStepResult(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     test_run_id = Column(UUID(as_uuid=True), ForeignKey("test_case_runs.id"), nullable=False)
     step_id = Column(UUID(as_uuid=True), ForeignKey("test_steps.id"), nullable=False)
-    status = Column(Enum(TestStatus), nullable=False)
+    status = Column(String, nullable=False)  # 'pending', 'passed', 'failed'
     
     # Execution details
     start_time = Column(DateTime, nullable=False)
@@ -255,7 +243,3 @@ class TestStepResult(Base):
         Index('ix_test_step_results_test_run_id', 'test_run_id'),
         Index('ix_test_step_results_step_id', 'step_id'),
     )
-    
-"""
-
-"""
