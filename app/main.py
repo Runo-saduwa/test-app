@@ -246,6 +246,7 @@ asyncio.run(run_test())
         # Clean up temporary file
         os.unlink(script_path)
 
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
